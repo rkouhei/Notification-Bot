@@ -1,0 +1,31 @@
+{
+  "compareAll": [
+    {"url": "https://google.com"},
+    {"url": "https://google.com"},
+    {"url": "https://google.com"}
+  ],
+  "compareParts": [
+    {
+      "url": "https://google.com",
+      "part": "<div id=\"root\">"
+    },
+    {
+      "url": "https://google.com",
+      "part": "<div id=\"root\">"
+    }
+  ],
+  "compareOutsideHTML": [
+    {"url": "https://google.com"},
+    {"url": "https://google.com"}
+  ],
+  "dynamicURL": [
+    {
+      "url": "https://google.com/{date}",
+      "method": "1"
+    },
+    {
+      "url": "https://google.com/{date}",
+      "method": "2"
+    }
+  ]
+}

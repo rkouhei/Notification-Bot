@@ -1,5 +1,11 @@
 # modules
-node_modules/
+**/node_modules/
+
+# firebase settings
+.firebaserc
+
+# log
+firebase-debug.log
 
 # token
-token.json
+env/

@@ -1,0 +1,20 @@
+{
+  "urls": [
+    {
+      "url": "https://example.com",
+      "parts": "html"
+    },
+    {
+      "url": "https://example.org",
+      "parts": "html"
+    },
+    {
+      "url": "https://example.net",
+      "parts": "html"
+    },
+    {
+      "url": "https://example.edu",
+      "parts": "html"
+    }
+  ]
+}

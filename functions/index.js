@@ -2,7 +2,6 @@
 
 const express = require('express');
 const functions = require('firebase-functions');
-const firebase = require('firebase-admin');
 const line = require('@line/bot-sdk');
 
 const line_token = require('../env/linebot.json');
@@ -11,13 +10,7 @@ const config = {
   channelAccessToken: line_token.AccessToken
 };
 
-const serviceAccount = require('../env/firebase-project.json');
-const dbUrl = require('../env/db-url.json');
-firebase.initializeApp({
- credential: firebase.credential.cert(serviceAccount),
- databaseURL: dbUrl.url
-});
-
+const accessDB = require('./src/crud/accessDB')
 const check = require('./src/checkUrl');
 
 const app = express();
@@ -34,29 +27,13 @@ async function handleEvent(event) {
   }
 
   let replyText = event.message.text
-  let db = firebase.database();
 
   //-- 開始処理 --//
   if (event.message.text === '開始') {
 
-    let allUser = await getAllUser(db);
-    
-    let newData = -1;
-    allUser.map(function(item) {
-      if (item.userid == event.source.userId) {
-        newData = item.id;
-      }
-    });
-
-    if ( newData === -1 ) {
-      let lastId = await getLastUserId(db);
-      lastId++;
-
-      db.ref('USERID/' + lastId).set({
-        id: lastId,
-        userid: event.source.userId
-      });
-
+    let isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
+    if ( !isStarted ) {
+      await accessDB.setNewUser(event.source.userId)
       replyText = '開始しました';
     } else {
       replyText = 'すでに開始しています';
@@ -67,17 +44,9 @@ async function handleEvent(event) {
   //-- 終了処理 --//
   if (event.message.text === '終了') {
 
-    let allUser = await getAllUser(db);
-    
-    let newData = -1;
-    allUser.map(function(item) {
-      if (item.userid == event.source.userId) {
-        newData = item.id;
-      }
-    });
-
-    if ( newData !== -1 ) {
-      db.ref('USERID/' + newData).set({});
+    let isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
+    if ( isStarted ) {
+      accessDB.deleteUserByLineId(event.source.userId);
       replyText = '終了しました';
     } else {
       replyText = '開始していません';
@@ -85,74 +54,38 @@ async function handleEvent(event) {
 
   }
 
+  //---- start 手動起動テスト ----//
+
   if ( event.message.text === 'いに' ) {
-    //doPushMessage();
-    check.setDB(firebase);
     check.init()
+    replyText = 'HTML DB init'
   }
 
   if ( event.message.text === 'ふぃに' ) {
-    //doPushMessage();
-    check.setDB(firebase);
     check.finish()
+    replyText = 'HTML DB clear'
   }
   
   if ( event.message.text === 'ぷ' ) {
-    //doPushMessage();
-    check.setDB(firebase);
     const data = await check.scheduleTask();
-    console.log('indexの' + data);
-    
     for ( let i in data ) {
       doPushMessage(data[i].url)
     }
+    replyText = 'push test'
   }
+
+  //---- end 手動起動テスト ----//
   
-
-  //-- reply --//
-  client.replyMessage(event.replyToken, {
-    type: 'text',
-    text: replyText
-  });
+  doReplyMessage(event.replyToken, replyText)
 }
 
-async function getLastUserId(db) {
-
-  let lastId;
-
-  await db.ref("USERID")
-  .orderByKey()
-  .limitToLast(1)
-  .once('value')
-  .then(function(snapshot) {
-    let lastUser = snapshot.val()
-    for (let i in lastUser) {
-      lastId = i;
-    }
-  });
-
-  return lastId;
-}
-
-async function getAllUser(db) {
-
-  let allUser;
-
-  await db.ref("USERID")
-  .orderByKey()
-  .once('value')
-  .then(function(snapshot) {
-    allUser = snapshot.val()
-  });
-
-  return allUser;
-}
+//---------------//
+//-- Messaging --//
+//---------------//
 
 async function doPushMessage(sendText) {
   // let sendText = "ここに変更urlを入れて送る";
-
-  let db = firebase.database();
-  let allUser = await getAllUser(db);
+  let allUser = await accessDB.getAllUser();
 
   allUser.map(function(item) {
     if ( item.userid !== 'dummy' ) {
@@ -165,7 +98,17 @@ async function doPushMessage(sendText) {
 
 }
 
-//module.exports = doPushMessage;
-exports.doPushMessage = doPushMessage;
+function doReplyMessage(replyToken, replyText) {
+  client.replyMessage(replyToken, {
+    type: 'text',
+    text: replyText
+  });
+}
+//-------------------//
+//-- end Messaging --//
+//-------------------//
 
-exports.app = functions.https.onRequest(app);
+module.exports = {
+  app: functions.https.onRequest(app),
+  doPushMessage: doPushMessage
+}

@@ -14,9 +14,11 @@ const config = {
 const serviceAccount = require('../env/firebase-project.json');
 const dbUrl = require('../env/db-url.json');
 firebase.initializeApp({
-  credential: firebase.credential.cert(serviceAccount),
-  databaseURL: dbUrl.url
+ credential: firebase.credential.cert(serviceAccount),
+ databaseURL: dbUrl.url
 });
+
+const check = require('./src/checkUrl');
 
 const app = express();
 app.post('/webhook', line.middleware(config), (req, res) => {
@@ -83,9 +85,27 @@ async function handleEvent(event) {
 
   }
 
+  if ( event.message.text === 'いに' ) {
+    //doPushMessage();
+    check.setDB(firebase);
+    check.init()
+  }
+
+  if ( event.message.text === 'ふぃに' ) {
+    //doPushMessage();
+    check.setDB(firebase);
+    check.finish()
+  }
   
   if ( event.message.text === 'ぷ' ) {
-    doPushMessage();
+    //doPushMessage();
+    check.setDB(firebase);
+    const data = await check.scheduleTask();
+    console.log('indexの' + data);
+    
+    for ( let i in data ) {
+      doPushMessage(data[i].url)
+    }
   }
   
 
@@ -128,8 +148,8 @@ async function getAllUser(db) {
   return allUser;
 }
 
-async function doPushMessage() {
-  let sendText = "ここに変更urlを入れて送る";
+async function doPushMessage(sendText) {
+  // let sendText = "ここに変更urlを入れて送る";
 
   let db = firebase.database();
   let allUser = await getAllUser(db);
@@ -144,5 +164,8 @@ async function doPushMessage() {
   });
 
 }
+
+//module.exports = doPushMessage;
+exports.doPushMessage = doPushMessage;
 
 exports.app = functions.https.onRequest(app);

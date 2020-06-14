@@ -11,7 +11,8 @@ const config = {
 };
 
 const accessDB = require('./src/crud/accessDB')
-const check = require('./src/checkUrl');
+const checkUrl = require('./src/checkUrl');
+const checkTwitter = require('./src/checkTwitter');
 
 const app = express();
 app.post('/webhook', line.middleware(config), (req, res) => {
@@ -57,19 +58,26 @@ async function handleEvent(event) {
   //---- start 手動起動テスト ----//
 
   if ( event.message.text === 'いに' ) {
-    check.init()
-    replyText = 'HTML DB init'
+    checkUrl.init()
+    checkTwitter.init()
+    replyText = 'site DB init'
   }
 
   if ( event.message.text === 'ふぃに' ) {
-    check.finish()
-    replyText = 'HTML DB clear'
+    checkUrl.finish()
+    checkTwitter.finish()
+    replyText = 'site DB clear'
   }
   
   if ( event.message.text === 'ぷ' ) {
-    const data = await check.scheduleTask();
-    for ( let i in data ) {
-      doPushMessage(data[i].url)
+    const dataHtml = await checkUrl.scheduleTask();
+    const dataTwitter = await checkTwitter.scheduleTask();
+    for ( let i in dataHtml ) {
+      await doPushMessage(dataHtml[i].url)
+    }
+    for ( let i in dataTwitter ) {
+      let pushMessage = "@" + dataTwitter[i].twitterid + "\n" + "Time : " + dataTwitter[i].time + "\n" +dataTwitter[i].text;
+      await doPushMessage(pushMessage)
     }
     replyText = 'push test'
   }

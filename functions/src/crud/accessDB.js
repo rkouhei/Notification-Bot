@@ -157,6 +157,75 @@ async function deleteHtmlById(id) {
 //-- end HTML --//
 //--------------//
 
+//-------------------//
+//-- start TWITTER --//
+//-------------------//
+
+//-- set
+async function setNewTwitter(data) {
+  let db = firebase.database();
+  let lastId = await getLastTwitterId();
+  lastId++;
+  db.ref('TWITTER/' + lastId).set({
+    id: lastId,
+    time: data.time,
+    twitterid: data.twitterid
+  });
+}
+
+//- get
+async function getLastTwitterId() {
+  let db = firebase.database();
+  let lastTwitterId;
+
+  await db.ref("TWITTER")
+  .orderByKey()
+  .limitToLast(1)
+  .once('value')
+  .then(function(snapshot) {
+    let lastTwitter = snapshot.val()
+    for (let i in lastTwitter) {
+      lastTwitterId = i;
+    }
+  });
+
+  return lastTwitterId;
+}
+
+async function getAllTwitter() {
+  let db = firebase.database();
+  let allTwitter;
+
+  await db.ref("TWITTER")
+  .orderByKey()
+  .once('value')
+  .then(function(snapshot) {
+    allTwitter = snapshot.val()
+  });
+  
+  return allTwitter;
+}
+
+//-- update
+async function updateTwitterById(data) {
+  let db = firebase.database();
+  db.ref('TWITTER/' + data.id).set({
+    id: data.id,
+    time: data.time,
+    twitterid: data.twitterid
+  });
+}
+
+//-- delete
+async function deleteTwitterById(id) {
+  let db = firebase.database();
+  db.ref('TWITTER/' + id).set({});
+}
+
+//-----------------//
+//-- end TWITTER --//
+//-----------------//
+
 module.exports = {
   setNewUser: setNewUser,
   getLastUserId: getLastUserId,
@@ -167,5 +236,10 @@ module.exports = {
   getLastHtmlId: getLastHtmlId,
   getAllHtml: getAllHtml,
   updateHtmlById: updateHtmlById,
-  deleteHtmlById: deleteHtmlById
+  deleteHtmlById: deleteHtmlById,
+  setNewTwitter: setNewTwitter,
+  getLastTwitterId: getLastTwitterId,
+  getAllTwitter: getAllTwitter,
+  updateTwitterById: updateTwitterById,
+  deleteTwitterById: deleteTwitterById
 }

@@ -16,5 +16,10 @@
       "url": "https://example.edu",
       "parts": "html"
     }
+  ],
+  "twitter": [
+    {
+      "twitterId": "tos"
+    }
   ]
 }

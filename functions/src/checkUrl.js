@@ -70,12 +70,11 @@ async function scheduleTask() {
 }
 
 async function finish() {
-  const db_finish = this.db;
-  let allHtml = await accessDB.getAllHtml(db_finish);
+  let allHtml = await accessDB.getAllHtml();
     
   allHtml.map(function(item) {
     if (item.url !== 'dummy') {
-      accessDB.deleteHtmlById(item.id, db_finish);
+      accessDB.deleteHtmlById(item.id);
     }
   });
 }

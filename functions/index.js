@@ -56,45 +56,75 @@ async function handleEvent(event) {
   }
 
   //---- start 手動起動テスト ----//
-
   if ( event.message.text === 'いに' ) {
-    checkUrl.init()
-    checkTwitter.init()
+    initTask();
     replyText = 'site DB init'
   }
-
   if ( event.message.text === 'ふぃに' ) {
-    checkUrl.finish()
-    checkTwitter.finish()
+    finishTask()
     replyText = 'site DB clear'
   }
-  
   if ( event.message.text === 'ぷ' ) {
-    const dataHtml = await checkUrl.scheduleTask();
-    const dataTwitter = await checkTwitter.scheduleTask();
-    for ( let i in dataHtml ) {
-      await doPushMessage(dataHtml[i].url)
-    }
-    for ( let i in dataTwitter ) {
-      let pushMessage = "@" + dataTwitter[i].twitterid + "\n" + "Time : " + dataTwitter[i].time + "\n" +dataTwitter[i].text;
-      await doPushMessage(pushMessage)
-    }
+    pushTask()
     replyText = 'push test'
   }
-
   //---- end 手動起動テスト ----//
   
   doReplyMessage(event.replyToken, replyText)
 }
 
-//---------------//
-//-- Messaging --//
-//---------------//
+//----------------------//
+//-- start 定期実行処理 --//
+//----------------------//
+
+/**
+ * @fn 定期実行準備関数
+ * @brief pushTask()において確認するURL・Twitterアカウント及び現情報をDBへ保存する
+ * @ref './data/site.json'
+ * @schedule /1day
+ */
+function initTask() {
+  checkUrl.init()
+  checkTwitter.init()
+}
+
+/**
+ * @fn 定期実行終了関数
+ * @brief DBに登録されているURL・Twitterアカウント情報をクリアする
+ * @schedule /1day
+ */
+function finishTask() {
+  checkUrl.finish()
+  checkTwitter.finish()
+}
+
+/**
+ * @fn 定期実行関数
+ * @brief DBに登録されているURL・Twitterアカウントにて前回から変更があるものを登録ユーザに通知を行う
+ * @schedule /30min
+ */
+async function pushTask() {
+  const dataHtml = await checkUrl.scheduleTask();
+  const dataTwitter = await checkTwitter.scheduleTask();
+  for ( let i in dataHtml ) {
+    await doPushMessage(dataHtml[i].url)
+  }
+  for ( let i in dataTwitter ) {
+    let pushMessage = "@" + dataTwitter[i].twitterid + "\n" + "Time : " + dataTwitter[i].time + "\n" +dataTwitter[i].text;
+    await doPushMessage(pushMessage)
+  }
+}
+
+//--------------------//
+//-- end 定期実行処理 --//
+//--------------------//
+
+//---------------------//
+//-- start Messaging --//
+//---------------------//
 
 async function doPushMessage(sendText) {
-  // let sendText = "ここに変更urlを入れて送る";
   let allUser = await accessDB.getAllUser();
-
   allUser.map(function(item) {
     if ( item.userid !== 'dummy' ) {
       client.pushMessage(item.userid, {
@@ -103,7 +133,6 @@ async function doPushMessage(sendText) {
       })
     }
   });
-
 }
 
 function doReplyMessage(replyToken, replyText) {

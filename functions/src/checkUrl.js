@@ -1,6 +1,6 @@
 'use strict';
 
-const sitejson = require('../data/site.json');
+const generateUrl = require('./generateUrl');
 const request = require('request-promise');
 const cheerio = require('cheerio');
 
@@ -8,6 +8,7 @@ const accessDB = require('./crud/accessDB')
 
 async function init() {
   const data = [];
+  const sitejson = await generateUrl.generate();
 
   await Promise.all(sitejson.urls.map(async (urls) => {
     await request(urls.url, (e, response, body) => {

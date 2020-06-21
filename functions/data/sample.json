@@ -15,6 +15,16 @@
     {
       "url": "https://example.edu",
       "parts": "html"
+    },
+    {
+      "url": "https://example.co.jp/id={id}",
+      "parts": "html",
+      "parameter": ["id"]
+    },
+    {
+      "url": "https://example.co.br/requestDate={requestDate}&country={country}",
+      "parts": "html",
+      "parameter": ["requestDate", "country"]
     }
   ],
   "twitter": [

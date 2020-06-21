@@ -6,15 +6,15 @@
     },
     {
       "url": "https://example.org",
-      "parts": "html"
+      "parts": "#idValue"
     },
     {
       "url": "https://example.net",
-      "parts": "html"
+      "parts": "h1"
     },
     {
       "url": "https://example.edu",
-      "parts": "html"
+      "parts": "table"
     },
     {
       "url": "https://example.co.jp/id={id}",

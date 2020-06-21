@@ -8,16 +8,14 @@ const accessDB = require('./crud/accessDB')
 
 async function init() {
   const data = [];
+  const regex = /[\n\t\s]+/g;
   const sitejson = await generateUrl.generate();
 
   await Promise.all(sitejson.urls.map(async (urls) => {
-    await request(urls.url, (e, response, body) => {
-      if (e) {
-        console.error(e)
-      }
+    await request(urls.url, {timeout: 1500}, (e, response, body) => {
       try {
         const $ = cheerio.load(body)
-        const textBody = $(urls.parts).text();
+        const textBody = $(urls.parts).text().replace(regex, '');
         const d = {
           url: urls.url,
           body: textBody,
@@ -37,6 +35,7 @@ async function init() {
 
 async function scheduleTask() {
   const data = [];
+  const regex = /[\n\t\s]+/g;
   let allHtml = await accessDB.getAllHtml();
 
   await Promise.all(allHtml.map(async function(item) {
@@ -47,7 +46,7 @@ async function scheduleTask() {
         }
         try {
           const $ = cheerio.load(body)
-          const newTextBody = $(item.parts).text();
+          const newTextBody = $(item.parts).text().replace(regex, '');
           if ( item.body !== newTextBody ) {
             const d = {
               id: item.id,
@@ -72,7 +71,7 @@ async function scheduleTask() {
 
 async function finish() {
   let allHtml = await accessDB.getAllHtml();
-    
+
   allHtml.map(function(item) {
     if (item.url !== 'dummy') {
       accessDB.deleteHtmlById(item.id);

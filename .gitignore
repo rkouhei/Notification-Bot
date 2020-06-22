@@ -8,7 +8,7 @@
 firebase-debug.log
 
 # token
-env/
+**/env/
 
 # url list
 functions/data/site.json

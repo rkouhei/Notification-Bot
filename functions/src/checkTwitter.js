@@ -1,7 +1,7 @@
 'use strict';
 
 const Twitter = require('twitter-lite');
-const twitter_token = require('../../env/twitter_api_token.json');
+const twitter_token = require('../env/twitter_api_token.json');
 const sitejson = require('../data/site.json')
 const tw = new Twitter({
   consumer_key: twitter_token.APIKey,

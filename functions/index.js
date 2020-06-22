@@ -4,7 +4,7 @@ const express = require('express');
 const functions = require('firebase-functions');
 const line = require('@line/bot-sdk');
 
-const line_token = require('../env/linebot.json');
+const line_token = require('./env/linebot.json');
 const config = {
   channelSecret: line_token.Secret,
   channelAccessToken: line_token.AccessToken
@@ -83,9 +83,10 @@ async function handleEvent(event) {
  * @ref './data/site.json'
  * @schedule /1day
  */
-function initTask() {
-  checkUrl.init()
-  checkTwitter.init()
+async function initTask() {
+  await doPushMessage('scheduling initTask()')
+  await checkUrl.init()
+  await checkTwitter.init()
 }
 
 /**
@@ -93,9 +94,11 @@ function initTask() {
  * @brief DBに登録されているURL・Twitterアカウント情報をクリアする
  * @schedule /1day
  */
-function finishTask() {
-  checkUrl.finish()
-  checkTwitter.finish()
+async function finishTask() {
+  await doPushMessage('scheduling finishTask()')
+  await checkUrl.finish()
+  await checkTwitter.finish()
+  await accessDB.deleteAllUser()
 }
 
 /**
@@ -104,6 +107,9 @@ function finishTask() {
  * @schedule /30min
  */
 async function pushTask() {
+  const timezoneoffset = -9;
+  const now = new Date(Date.now() - (timezoneoffset * 60 - new Date().getTimezoneOffset()) * 60000).toLocaleString({ timeZone: 'Asia/Tokyo' })
+  await doPushMessage(now)
   const dataHtml = await checkUrl.scheduleTask();
   const dataTwitter = await checkTwitter.scheduleTask();
   for ( let i in dataHtml ) {
@@ -147,5 +153,21 @@ function doReplyMessage(replyToken, replyText) {
 
 module.exports = {
   app: functions.https.onRequest(app),
+  /**
+   * @module schedule sample
+   * @usage schedule()の中を各々実行したい時間へ変更する
+   */
+  initTask: functions.pubsub.schedule('30 0 * * *').timeZone('Asia/Tokyo').onRun(async (context) => {
+    await initTask()
+    console.log('0:30 : initTask()');
+  }),
+  finishTask: functions.pubsub.schedule('30 8 * * *').timeZone('Asia/Tokyo').onRun(async (context) => {
+    await finishTask()
+    console.log('8:30 : finishTask()');
+  }),
+  pushTask: functions.pubsub.schedule('*/30 * * * *').timeZone('Asia/Tokyo').onRun(async (context) => {
+    await pushTask()
+    console.log('every 30 minutes : pushTask()');
+  }),
   doPushMessage: doPushMessage
 }

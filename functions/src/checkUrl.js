@@ -12,20 +12,32 @@ async function init() {
   const sitejson = await generateUrl.generate();
 
   await Promise.all(sitejson.urls.map(async (urls) => {
-    await request(urls.url, {timeout: 1500}, (e, response, body) => {
-      try {
-        const $ = cheerio.load(body)
-        const textBody = $(urls.parts).text().replace(regex, '');
-        const d = {
-          url: urls.url,
-          body: textBody,
-          parts: urls.parts
+    try {
+      await request(urls.url, (e, response, body) => {
+        if ( e ) {
+          console.error(e)
         }
-        data.push(d);
-      } catch (e) {
-        console.error(e)
-      }
-    })
+        try {
+          let textBody;
+          if (body) {
+            const $ = cheerio.load(body);
+            textBody = $(urls.parts).text().replace(regex, '');
+          } else {
+            textBody = 'not found';
+          }
+          const d = {
+            url: urls.url,
+            body: textBody,
+            parts: urls.parts
+          }
+          data.push(d);
+        } catch ( e ) {
+          console.error(e)
+        }
+      })
+    } catch ( e ) {
+      console( e )
+    }
   }))
 
   for ( let i in data ) {
@@ -40,26 +52,35 @@ async function scheduleTask() {
 
   await Promise.all(allHtml.map(async function(item) {
     if (item.url !== 'dummy') {
-      await request(item.url, (e, response, body) => {
-        if (e) {
-          console.error(e)
-        }
-        try {
-          const $ = cheerio.load(body)
-          const newTextBody = $(item.parts).text().replace(regex, '');
-          if ( item.body !== newTextBody ) {
-            const d = {
-              id: item.id,
-              url: item.url,
-              body: newTextBody,
-              parts: item.parts
-            }
-            data.push(d);
+      try {
+        await request(item.url, (e, response, body) => {
+          if (e) {
+            console.error(e)
           }
-        } catch (e) {
-          console.error(e)
-        }
-      })
+          try {
+            let newTextBody;
+            if (body) {
+              const $ = cheerio.load(body);
+              newTextBody = $(item.parts).text().replace(regex, '');
+            } else {
+              newTextBody = 'not found';
+            }
+            if ( item.body !== newTextBody ) {
+              const d = {
+                id: item.id,
+                url: item.url,
+                body: newTextBody,
+                parts: item.parts
+              }
+              data.push(d);
+            }
+          } catch (e) {
+            console.error(e)
+          }
+        })
+      } catch ( e ) {
+        console( e )
+      }
     }
   }))
 
@@ -79,7 +100,7 @@ async function finish() {
   });
 }
 
-//init()
+// init()
 //getAllHtml();
 //finish()
 //scheduleTask()

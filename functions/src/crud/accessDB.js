@@ -2,8 +2,8 @@
 
 const firebase = require('firebase-admin');
 
-const serviceAccount = require('../../../env/firebase-project.json');
-const dbUrl = require('../../../env/db-url.json');
+const serviceAccount = require('../../env/firebase-project.json');
+const dbUrl = require('../../env/db-url.json');
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
   databaseURL: dbUrl.url
@@ -59,6 +59,16 @@ async function getAllUser() {
 }
 
 //-- delete
+async function deleteAllUser() {
+  let db = firebase.database();
+  let allUser = await getAllUser();
+  allUser.map(function(item) {
+    if ( item.userid !== 'dummy' ) {
+      db.ref('USERID/' + item.id).set({});
+    }
+  });
+}
+
 async function deleteUserByLineId(lineId) {
   let db = firebase.database();
   let allUser = await getAllUser();
@@ -230,6 +240,7 @@ module.exports = {
   setNewUser: setNewUser,
   getLastUserId: getLastUserId,
   getAllUser: getAllUser,
+  deleteAllUser: deleteAllUser,
   deleteUserByLineId: deleteUserByLineId,
   isUserStartedByLineId: isUserStartedByLineId,
   setNewHtml: setNewHtml,

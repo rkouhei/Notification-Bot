@@ -79,7 +79,9 @@ async function finish() {
 //--------------------//
 
 function makeDateJSTfromTimestamp(timestamp) {
-  return new Date(Date.parse(timestamp)).toLocaleString({ timeZone: 'Asia/Tokyo' })
+  const timezoneoffset = -9;
+  const dateJST = new Date(Date.parse(timestamp) - (timezoneoffset * 60 - new Date().getTimezoneOffset()) * 60000).toLocaleString({ timeZone: 'Asia/Tokyo' })
+  return dateJST
 }
 
 function compareByTime(a, b) {

@@ -21,10 +21,13 @@
   "dependencies": {
     "@line/bot-sdk": "^6.8.4",
     "cheerio": "^1.0.0-rc.3",
+    "encoding-japanese": "^1.0.30",
     "express": "^4.17.1",
     "firebase": "^7.14.3",
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.1",
+    "iconv": "^3.0.0",
+    "puppeteer": "^3.0.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
     "twitter-lite": "^0.14.0"

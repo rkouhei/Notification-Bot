@@ -3,6 +3,8 @@
 const generateUrl = require('./generateUrl');
 const request = require('request-promise');
 const cheerio = require('cheerio');
+const Iconv = require('iconv').Iconv;
+const encoding = require('encoding-japanese');
 const accessDB = require('./crud/accessDB')
 
 const thisMode = 'request';
@@ -22,6 +24,9 @@ async function init() {
           let textBody;
           let parts = makeRequestParts(urls.parts);
           if (body) {
+            const detected = encoding.detect(body);
+            let iconv = new Iconv(detected, 'UTF-8//TRANSLIT//IGNORE');
+            body = iconv.convert(body).toString();
             const $ = cheerio.load(body);
             textBody = $(parts).text().replace(regex, '');
           } else {
@@ -61,6 +66,9 @@ async function scheduleTask() {
         try {
           let newTextBody;
           if (body) {
+            const detected = encoding.detect(body);
+            let iconv = new Iconv(detected, 'UTF-8//TRANSLIT//IGNORE');
+            body = iconv.convert(body).toString();
             const $ = cheerio.load(body);
             newTextBody = $(allHtml[item_index].parts).text().replace(regex, '');
           }

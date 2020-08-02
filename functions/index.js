@@ -12,6 +12,7 @@ const config = {
 
 const accessDB = require('./src/crud/accessDB')
 const checkUrl = require('./src/checkUrl');
+const checkBrowser = require('./src/checkBrowser');
 const checkTwitter = require('./src/checkTwitter');
 
 const app = express();
@@ -86,6 +87,7 @@ async function handleEvent(event) {
 async function initTask() {
   await doPushMessage('scheduling initTask()')
   await checkUrl.init()
+  await checkBrowser.init()
   await checkTwitter.init()
 }
 
@@ -97,6 +99,7 @@ async function initTask() {
 async function finishTask() {
   await doPushMessage('scheduling finishTask()')
   await checkUrl.finish()
+  await checkBrowser.finish()
   await checkTwitter.finish()
   await accessDB.deleteAllUser()
 }
@@ -110,10 +113,13 @@ async function pushTask() {
   const timezoneoffset = -9;
   const now = new Date(Date.now() - (timezoneoffset * 60 - new Date().getTimezoneOffset()) * 60000).toLocaleString({ timeZone: 'Asia/Tokyo' })
   await doPushMessage(now)
-  const dataHtml = await checkUrl.scheduleTask();
+  const dataUrl = await checkUrl.scheduleTask();
+  const dataBrowser = await checkBrowser.scheduleTask();
+  const dataHtml = dataUrl.concat(dataBrowser);
   const dataTwitter = await checkTwitter.scheduleTask();
+  if ( dataHtml.length == 0 ) { await doPushMessage(templateMessage.noChange) }
   for ( let i in dataHtml ) {
-    await doPushMessage(dataHtml[i].url)
+    await doPushMessage(dataHtml[i])
   }
   for ( let i in dataTwitter ) {
     let pushMessage = "@" + dataTwitter[i].twitterid + "\n" + "Time : " + dataTwitter[i].time + "\n" +dataTwitter[i].text;

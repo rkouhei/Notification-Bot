@@ -5,6 +5,7 @@ const request = require('request-promise');
 const cheerio = require('cheerio');
 const Iconv = require('iconv').Iconv;
 const encoding = require('encoding-japanese');
+const compareTxt = require('./util/compareTxt');
 const accessDB = require('./crud/accessDB')
 
 const thisMode = 'request';
@@ -73,6 +74,9 @@ async function scheduleTask() {
             newTextBody = $(allHtml[item_index].parts).text().replace(regex, '');
           }
           if ( allHtml[item_index].body !== newTextBody ) {
+            const diffResult = compareTxt.makeDiffResult(allHtml[item_index].body, newTextBody, allHtml[item_index].url);
+            notifications.push(diffResult);
+
             const d = {
               id: allHtml[item_index].id,
               url: allHtml[item_index].url,

@@ -21,6 +21,7 @@
   "dependencies": {
     "@line/bot-sdk": "^6.8.4",
     "cheerio": "^1.0.0-rc.3",
+    "diff": "^4.0.2",
     "encoding-japanese": "^1.0.30",
     "express": "^4.17.1",
     "firebase": "^7.14.3",

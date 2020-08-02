@@ -3,6 +3,7 @@
 const generateUrl = require('./generateUrl');
 const accessDB = require('./crud/accessDB')
 const puppeteer = require('puppeteer');
+const compareTxt = require('./util/compareTxt');
 
 const thisMode = 'puppeteer'
 
@@ -103,6 +104,8 @@ async function scheduleTask() {
         newTextBody = newTextBody.replace(regex, '');
 
         if ( allHtml[item_index].body !== newTextBody ) {
+          const diffResult = compareTxt.makeDiffResult(allHtml[item_index].body, newTextBody, allHtml[item_index].url);
+          notifications.push(diffResult);
 
           const d = {
             id: allHtml[item_index].id,

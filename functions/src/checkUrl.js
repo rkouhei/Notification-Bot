@@ -50,39 +50,34 @@ async function scheduleTask() {
   const regex = /[\n\t\s]+/g;
   let allHtml = await accessDB.getAllHtml();
 
-  await Promise.all(allHtml.map(async function(item) {
-    if (item.url !== 'dummy') {
-      try {
-        await request(item.url, (e, response, body) => {
-          if (e) {
-            console.error(e)
+  for ( let item_index in allHtml ) {
+    try {
+      await request({ url: allHtml[item_index].url }, (e, response, body) => {
+        try {
+          let newTextBody;
+          if (body) {
+            const $ = cheerio.load(body);
+            newTextBody = $(item.parts).text().replace(regex, '');
+          } else {
+            newTextBody = 'not found';
           }
-          try {
-            let newTextBody;
-            if (body) {
-              const $ = cheerio.load(body);
-              newTextBody = $(item.parts).text().replace(regex, '');
-            } else {
-              newTextBody = 'not found';
+          if ( allHtml[item_index].body !== newTextBody ) {
+            const d = {
+              id: item.id,
+              url: item.url,
+              body: newTextBody,
+              parts: item.parts
             }
-            if ( item.body !== newTextBody ) {
-              const d = {
-                id: item.id,
-                url: item.url,
-                body: newTextBody,
-                parts: item.parts
-              }
-              data.push(d);
-            }
-          } catch (e) {
-            console.error(e)
+            data.push(d);
           }
-        })
-      } catch ( e ) {
-        console( e )
-      }
+        } catch (e) {
+          console.error(e)
+        }
+      })
+    } catch ( e ) {
+      console.error( e )
     }
-  }))
+  }
 
   for ( let i in data ) {
     await accessDB.updateHtmlById(data[i])
@@ -93,17 +88,10 @@ async function scheduleTask() {
 async function finish() {
   let allHtml = await accessDB.getAllHtml();
 
-  allHtml.map(function(item) {
-    if (item.url !== 'dummy') {
-      accessDB.deleteHtmlById(item.id);
-    }
-  });
+  for ( let item_index in allHtml ) {
+    accessDB.deleteHtmlById(allHtml[item_index].id);
+  }
 }
-
-// init()
-//getAllHtml();
-//finish()
-//scheduleTask()
 
 module.exports = {
   scheduleTask: scheduleTask,

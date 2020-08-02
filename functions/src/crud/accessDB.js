@@ -72,11 +72,11 @@ async function deleteAllUser() {
 async function deleteUserByLineId(lineId) {
   let db = firebase.database();
   let allUser = await getAllUser();
-  allUser.map(function(item) {
-    if (item.userid === lineId) {
-      db.ref('USERID/' + item.id).set({});
+  for ( let item_index in allUser ) {
+    if ( allUser[item_index].userid !== 'dummy' ) {
+      db.ref('USERID/' + allUser[item_index].id).set({});
     }
-  });
+  }
 }
 
 //-- boolean
@@ -84,11 +84,12 @@ async function isUserStartedByLineId(lineId) {
   let db = firebase.database();
   let allUser = await getAllUser();
   let isStarted = false;
-  allUser.map(function(item) {
-    if (item.userid === lineId) {
+  for ( let item_index in allUser ) {
+    if ( allUser[item_index].userid === lineId ) {
       isStarted = true;
+      break;
     }
-  });
+  }
   return isStarted;
 }
 

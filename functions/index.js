@@ -131,14 +131,14 @@ async function pushTask() {
 
 async function doPushMessage(sendText) {
   let allUser = await accessDB.getAllUser();
-  allUser.map(function(item) {
-    if ( item.userid !== 'dummy' ) {
-      client.pushMessage(item.userid, {
+  for ( let item_index in allUser ) {
+    if ( allUser[item_index].userid !== 'dummy' ) {
+      client.pushMessage(allUser[item_index].userid, {
         type: 'text',
         text: sendText,
       })
     }
-  });
+  };
 }
 
 function doReplyMessage(replyToken, replyText) {

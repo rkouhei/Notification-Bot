@@ -4,6 +4,7 @@ const firebase = require('firebase-admin');
 
 const serviceAccount = require('../../env/firebase-project.json');
 const dbUrl = require('../../env/db-url.json');
+
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
   databaseURL: dbUrl.url
@@ -62,18 +63,20 @@ async function getAllUser() {
 async function deleteAllUser() {
   let db = firebase.database();
   let allUser = await getAllUser();
-  allUser.map(function(item) {
-    if ( item.userid !== 'dummy' ) {
-      db.ref('USERID/' + item.id).set({});
+
+  for ( let item_index in allUser ) {
+    if ( allUser[item_index].userid !== 'dummy' ) {
+      db.ref('USERID/' + allUser[item_index].id).set({});
     }
-  });
+  }
 }
 
 async function deleteUserByLineId(lineId) {
   let db = firebase.database();
   let allUser = await getAllUser();
+
   for ( let item_index in allUser ) {
-    if ( allUser[item_index].userid !== 'dummy' ) {
+    if ( allUser[item_index].userid === lineId ) {
       db.ref('USERID/' + allUser[item_index].id).set({});
     }
   }
@@ -84,6 +87,7 @@ async function isUserStartedByLineId(lineId) {
   let db = firebase.database();
   let allUser = await getAllUser();
   let isStarted = false;
+
   for ( let item_index in allUser ) {
     if ( allUser[item_index].userid === lineId ) {
       isStarted = true;
@@ -110,7 +114,8 @@ async function setNewHtml(data) {
     body: data.body,
     id: lastId,
     url: data.url,
-    parts: data.parts
+    parts: data.parts,
+    mode: data.mode
   });
 }
 
@@ -147,6 +152,20 @@ async function getAllHtml() {
   return allHtml;
 }
 
+async function getHtmlByMode(getMode) {
+  let db = firebase.database();
+  let allHtml;
+
+  await db.ref("HTML")
+  .orderByKey()
+  .once('value')
+  .then(function(snapshot) {
+    allHtml = snapshot.val()
+  });
+
+  return [allHtml].filter(html => html.mode === getMode)
+}
+
 //-- update
 async function updateHtmlById(data) {
   let db = firebase.database();
@@ -154,7 +173,8 @@ async function updateHtmlById(data) {
     body: data.body,
     id: data.id,
     url: data.url,
-    parts: data.parts
+    parts: data.parts,
+    mode: data.mode
   });
 }
 
@@ -246,6 +266,7 @@ module.exports = {
   isUserStartedByLineId: isUserStartedByLineId,
   setNewHtml: setNewHtml,
   getLastHtmlId: getLastHtmlId,
+  getHtmlByMode: getHtmlByMode,
   getAllHtml: getAllHtml,
   updateHtmlById: updateHtmlById,
   deleteHtmlById: deleteHtmlById,

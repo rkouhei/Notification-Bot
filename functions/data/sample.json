@@ -2,28 +2,34 @@
   "urls": [
     {
       "url": "https://example.com",
-      "parts": "html"
+      "parts": { "tag": "h1" },
+      "mode": "request"
     },
     {
       "url": "https://example.org",
-      "parts": "#idValue"
+      "parts": { "id": "idValue" },
+      "mode": "puppeteer"
     },
     {
       "url": "https://example.net",
-      "parts": "h1"
+      "parts": { "tag": "html" },
+      "mode": "request"
     },
     {
       "url": "https://example.edu",
-      "parts": "table"
+      "parts": { "tag": "table" },
+      "mode": "puppeteer"
     },
     {
       "url": "https://example.co.jp/id={id}",
-      "parts": "html",
+      "parts": { "id": "checkValue" },
+      "mode": "request",
       "parameter": ["id"]
     },
     {
       "url": "https://example.co.br/requestDate={requestDate}&country={country}",
-      "parts": "html",
+      "parts": { "tag": "div" },
+      "mode": "puppeteer",
       "parameter": ["requestDate", "country"]
     }
   ],

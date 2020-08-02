@@ -4,6 +4,8 @@ const generateUrl = require('./generateUrl');
 const accessDB = require('./crud/accessDB')
 const puppeteer = require('puppeteer');
 
+const thisMode = 'puppeteer'
+
 const browserArgs = [
   '--no-sandbox',
   '--disable-setuid-sandbox',
@@ -17,7 +19,7 @@ const browserArgs = [
 async function init() {
   const data = [];
   const regex = /[\n\t\s]+/g;
-  const urls = await generateUrl.generate();
+  const urls = await generateUrl.generate(thisMode);
 
   const browser = await puppeteer.launch({
     args: browserArgs,
@@ -50,6 +52,7 @@ async function init() {
         url: urls.url,
         body: textBody,
         parts: urls.parts,
+        mode: urls.mode
       }
       data.push(d);
       
@@ -106,6 +109,7 @@ async function scheduleTask() {
             url: allHtml[item_index].url,
             body: newTextBody,
             parts: allHtml[item_index].parts,
+            mode: allHtml[item_index].mode
           }
           
           data.push(d);
@@ -128,7 +132,9 @@ async function finish() {
   let allHtml = await accessDB.getAllHtml();
 
   for ( let item_index in allHtml ) {
-    accessDB.deleteHtmlById(allHtml[item_index].id);
+    if (allHtml[item_index].mode === thisMode) {
+      accessDB.deleteHtmlById(allHtml[item_index].id);
+    }
   }
 }
 

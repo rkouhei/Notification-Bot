@@ -3,32 +3,35 @@
 const generateUrl = require('./generateUrl');
 const request = require('request-promise');
 const cheerio = require('cheerio');
-
 const accessDB = require('./crud/accessDB')
+
+const thisMode = 'request';
 
 async function init() {
   const data = [];
   const regex = /[\n\t\s]+/g;
-  const sitejson = await generateUrl.generate();
+  const urls = await generateUrl.generate(thisMode);
 
-  await Promise.all(sitejson.urls.map(async (urls) => {
+  await Promise.all(urls.map(async (urls) => {
     try {
-      await request(urls.url, (e, response, body) => {
+      await request({ url: urls.url, encoding: null }, (e, response, body) => {
         if ( e ) {
           console.error(e)
         }
         try {
           let textBody;
+          let parts = makeRequestParts(urls.parts);
           if (body) {
             const $ = cheerio.load(body);
-            textBody = $(urls.parts).text().replace(regex, '');
+            textBody = $(parts).text().replace(regex, '');
           } else {
-            textBody = 'not found';
+            textBody = '見れなかった';
           }
           const d = {
             url: urls.url,
             body: textBody,
-            parts: urls.parts
+            parts: parts,
+            mode: urls.mode
           }
           data.push(d);
         } catch ( e ) {
@@ -36,7 +39,7 @@ async function init() {
         }
       })
     } catch ( e ) {
-      console( e )
+      console.error( e )
     }
   }))
 
@@ -47,26 +50,27 @@ async function init() {
 
 async function scheduleTask() {
   const data = [];
+  const notifications = [];
   const regex = /[\n\t\s]+/g;
   let allHtml = await accessDB.getAllHtml();
 
   for ( let item_index in allHtml ) {
+    if ( allHtml[item_index].mode !== thisMode ) { continue; }
     try {
-      await request({ url: allHtml[item_index].url }, (e, response, body) => {
+      await request({ url: allHtml[item_index].url, encoding: null }, (e, response, body) => {
         try {
           let newTextBody;
           if (body) {
             const $ = cheerio.load(body);
-            newTextBody = $(item.parts).text().replace(regex, '');
-          } else {
-            newTextBody = 'not found';
+            newTextBody = $(allHtml[item_index].parts).text().replace(regex, '');
           }
           if ( allHtml[item_index].body !== newTextBody ) {
             const d = {
-              id: item.id,
-              url: item.url,
+              id: allHtml[item_index].id,
+              url: allHtml[item_index].url,
               body: newTextBody,
-              parts: item.parts
+              parts: allHtml[item_index].parts,
+              mode: allHtml[item_index].mode
             }
             data.push(d);
           }
@@ -82,15 +86,30 @@ async function scheduleTask() {
   for ( let i in data ) {
     await accessDB.updateHtmlById(data[i])
   }
-  return data
+  return notifications
 }
 
 async function finish() {
   let allHtml = await accessDB.getAllHtml();
 
   for ( let item_index in allHtml ) {
-    accessDB.deleteHtmlById(allHtml[item_index].id);
+    if (allHtml[item_index].mode === thisMode) {
+      accessDB.deleteHtmlById(allHtml[item_index].id);
+    }
   }
+}
+
+function makeRequestParts(parts) {
+  if ( parts.tag ) {
+    return parts.tag
+  }
+  if ( parts.id ) {
+    return "#"+parts.id
+  }
+  if ( parts.class ) {
+    return parts.class
+  }
+  return parts
 }
 
 module.exports = {

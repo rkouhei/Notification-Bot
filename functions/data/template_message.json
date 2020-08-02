@@ -1,0 +1,12 @@
+{
+  "help" : "このBOTでは、hoge分ごとにHP/Twitterの更新を通知します。\n更新されたHPは、リンクと更新内容をメッセージで送信します。\nすべてのHP/Twitterが更新されない場合は、更新がなかったことをメッセージで送信します。\n\n「開始」と入力していただくと、BOTから通知が届くようになります。\n\n「終了」と入力していただくと、BOTからの通知を中止します。(finishTask実行で強制的に通知を中止します)\n\n「ヘルプ」と入力していただくと、ヘルプを表示します。",
+  "receiveNotTxtMessage": "テキストのみ対応できます。",
+  "newUserStartTrue": "開始しました。",
+  "newUserStartFalse": "既に開始しています。",
+  "UserEndTrue": "終了しました。",
+  "UserEndFalse": "開始していません。",
+  "initTask": "開始時情報をDBに取得しました。",
+  "finishTask": "DBの初期化を行いました。",
+  "noChange": "変更はありませんでした。",
+  "default": "「ヘルプ」と入力していただくと使い方がわかります。"
+}

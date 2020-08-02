@@ -14,64 +14,72 @@ const accessDB = require('./src/crud/accessDB')
 const checkUrl = require('./src/checkUrl');
 const checkBrowser = require('./src/checkBrowser');
 const checkTwitter = require('./src/checkTwitter');
+const templateMessage = require('./data/template_message.json');
 
 const app = express();
 app.post('/webhook', line.middleware(config), (req, res) => {
-    console.log(req.body.events);
-    req.body.events.map(handleEvent);
+  console.log(req.body.events);
+
+  Promise.all(req.body.events.map(handleEvent))
+    .then((result) => res.json(result))
+    .catch((result) => console.log(result));
 });
 
 const client = new line.Client(config);
 
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
-    return;
+    return await doReplyMessage(
+      event.replyToken,
+      templateMessage.receiveNotTxtMessage
+    );
   }
 
-  let replyText = event.message.text
+  let replyText = templateMessage.default;
 
-  //-- 開始処理 --//
+  // -- 開始処理 --//
   if (event.message.text === '開始') {
-
-    let isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
-    if ( !isStarted ) {
-      await accessDB.setNewUser(event.source.userId)
-      replyText = '開始しました';
+    const isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
+    if (!isStarted) {
+      await accessDB.setNewUser(event.source.userId);
+      replyText = templateMessage.newUserStartTrue;
     } else {
-      replyText = 'すでに開始しています';
+      replyText = templateMessage.newUserStartFalse;
     }
-
   }
 
-  //-- 終了処理 --//
+  // -- 終了処理 --//
   if (event.message.text === '終了') {
-
-    let isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
-    if ( isStarted ) {
-      accessDB.deleteUserByLineId(event.source.userId);
-      replyText = '終了しました';
+    const isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
+    if (isStarted) {
+      await accessDB.deleteUserByLineId(event.source.userId);
+      replyText = templateMessage.UserEndTrue;
     } else {
-      replyText = '開始していません';
+      replyText = templateMessage.UserEndFalse;
     }
-
   }
 
-  //---- start 手動起動テスト ----//
-  if ( event.message.text === 'いに' ) {
-    initTask();
-    replyText = 'site DB init'
+  // -- ヘルプ --//
+  if (event.message.text === 'ヘルプ') {
+    replyText = templateMessage.help;
   }
-  if ( event.message.text === 'ふぃに' ) {
-    finishTask()
-    replyText = 'site DB clear'
+
+  // ---- start 手動起動テスト ----//
+  if (event.message.text === 'いに') {
+    await initTask();
+    replyText = 'site DB init by hand';
   }
-  if ( event.message.text === 'ぷ' ) {
-    pushTask()
-    replyText = 'push test'
+  if (event.message.text === 'ふぃに') {
+    await finishTask();
+    replyText = 'site DB clear by hand';
   }
-  //---- end 手動起動テスト ----//
-  
-  doReplyMessage(event.replyToken, replyText)
+  if (event.message.text === 'ぷ') {
+    await pushTask();
+    replyText = 'push test by hand';
+  }
+  // ---- end 手動起動テスト ----//
+
+  return await doReplyMessage(event.replyToken, replyText);
 }
 
 //----------------------//
@@ -117,7 +125,7 @@ async function pushTask() {
   const dataBrowser = await checkBrowser.scheduleTask();
   const dataHtml = dataUrl.concat(dataBrowser);
   const dataTwitter = await checkTwitter.scheduleTask();
-  if ( dataHtml.length == 0 ) { await doPushMessage(templateMessage.noChange) }
+  if ( dataHtml.length === 0 && dataTwitter.length === 0 ) { await doPushMessage(templateMessage.noChange) }
   for ( let i in dataHtml ) {
     await doPushMessage(dataHtml[i])
   }

@@ -15,7 +15,7 @@
     "closekn <close.me.kn@gmail.com> (https://github.com/closekn)"
   ],
   "engines": {
-    "node": "8"
+    "node": "10"
   },
   "dependencies": {
     "@line/bot-sdk": "^6.8.4",

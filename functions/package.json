@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Notification Line Bot by Firebase",
   "scripts": {
-    "serve": "firebase emulators:start --only functions",
+    "serve": "firebase serve --only hosting,functions",
+    "deploy": "firebase deploy",
+    "emulate": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
   "keywords": [],

@@ -8,7 +8,9 @@
     "emulate": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "lint": "eslint --ext .js .",
+    "lint:fix": "eslint --fix --ext .js ."
   },
   "keywords": [],
   "author": "rkouhei <rk0uhey@gmail.com> (https://github.com/rkouhei)",
@@ -34,13 +36,19 @@
     "twitter-lite": "^0.14.0"
   },
   "devDependencies": {
-    "firebase-functions-test": "^0.2.0"
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "firebase-functions-test": "^0.2.0",
+    "prettier": "^2.0.5"
   },
   "private": true,
   "homepage": "https://github.com/rkouhei/Notification-Bot",
   "bugs": {
     "url": "https://github.com/rkouhei/Notification-Bot/issues",
-    "email" : "rk0uhey@gmail.com"
+    "email": "rk0uhey@gmail.com"
   },
   "license": "MIT"
 }

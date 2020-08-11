@@ -1,5 +1,3 @@
-'use strict';
-
 const firebase = require('firebase-admin');
 
 const serviceAccount = require('../../env/firebase-project.json');
@@ -7,272 +5,272 @@ const dbUrl = require('../../env/db-url.json');
 
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
-  databaseURL: dbUrl.url
+  databaseURL: dbUrl.url,
 });
 
-//----------------//
-//-- start USER --//
-//----------------//
+// ----------------//
+// -- start USER --//
+// ----------------//
 
-//-- set
-async function setNewUser(lineId) {
-  let db = firebase.database();
-  let lastId = await getLastUserId();
-  lastId++;
-
-  db.ref('USERID/' + lastId).set({
-    id: lastId,
-    userid: lineId
-  });
-}
-
-//-- get
+// -- get
 async function getLastUserId() {
-  let db = firebase.database();
+  const db = firebase.database();
   let lastId;
 
-  await db.ref("USERID")
-  .orderByKey()
-  .limitToLast(1)
-  .once('value')
-  .then(function(snapshot) {
-    let lastUser = snapshot.val()
-    for (let i in lastUser) {
-      lastId = i;
-    }
-  });
+  await db
+    .ref('USERID')
+    .orderByKey()
+    .limitToLast(1)
+    .once('value')
+    .then((snapshot) => {
+      const lastUser = snapshot.val();
+      lastId = Object.keys(lastUser);
+    });
 
-  return lastId;
+  return lastId[0];
 }
 
 async function getAllUser() {
-  let db = firebase.database();
+  const db = firebase.database();
   let allUser;
 
-  await db.ref("USERID")
-  .orderByKey()
-  .once('value')
-  .then(function(snapshot) {
-    allUser = snapshot.val()
-  });
+  await db
+    .ref('USERID')
+    .orderByKey()
+    .once('value')
+    .then((snapshot) => {
+      allUser = snapshot.val();
+    });
 
   return allUser;
 }
 
-//-- delete
-async function deleteAllUser() {
-  let db = firebase.database();
-  let allUser = await getAllUser();
+// -- set
+async function setNewUser(lineId) {
+  const db = firebase.database();
+  let lastId = await getLastUserId();
+  lastId += 1;
 
-  for ( let item_index in allUser ) {
-    if ( allUser[item_index].userid !== 'dummy' ) {
-      db.ref('USERID/' + allUser[item_index].id).set({});
+  db.ref(`USERID/${lastId}`).set({
+    id: lastId,
+    userid: lineId,
+  });
+}
+
+// -- delete
+async function deleteAllUser() {
+  const db = firebase.database();
+  const allUser = await getAllUser();
+
+  allUser.forEach((user) => {
+    if (user.userid !== 'dummy') {
+      db.ref(`USERID/${user.id}`).set({});
     }
-  }
+  });
 }
 
 async function deleteUserByLineId(lineId) {
-  let db = firebase.database();
-  let allUser = await getAllUser();
+  const db = firebase.database();
+  const allUser = await getAllUser();
 
-  for ( let item_index in allUser ) {
-    if ( allUser[item_index].userid === lineId ) {
-      db.ref('USERID/' + allUser[item_index].id).set({});
+  allUser.forEach((user) => {
+    if (user.userid === lineId) {
+      db.ref(`USERID/${user.id}`).set({});
     }
-  }
+  });
 }
 
-//-- boolean
+// -- boolean
 async function isUserStartedByLineId(lineId) {
-  let db = firebase.database();
-  let allUser = await getAllUser();
+  const allUser = await getAllUser();
   let isStarted = false;
 
-  for ( let item_index in allUser ) {
-    if ( allUser[item_index].userid === lineId ) {
+  allUser.forEach((user) => {
+    if (user.userid === lineId) {
       isStarted = true;
-      break;
     }
-  }
+  });
+
   return isStarted;
 }
 
-//--------------//
-//-- end USER --//
-//--------------//
+// --------------//
+// -- end USER --//
+// --------------//
 
-//----------------//
-//-- start HTML --//
-//----------------//
+// ----------------//
+// -- start HTML --//
+// ----------------//
 
-//-- set
-async function setNewHtml(data) {
-  let db = firebase.database();
-  let lastId = await getLastHtmlId();
-  lastId++;
-  db.ref('HTML/' + lastId).set({
-    body: data.body,
-    id: lastId,
-    url: data.url,
-    parts: data.parts,
-    mode: data.mode
-  });
-}
-
-//- get
+// - get
 async function getLastHtmlId() {
-  let db = firebase.database();
+  const db = firebase.database();
   let lastHtmlId;
 
-  await db.ref("HTML")
-  .orderByKey()
-  .limitToLast(1)
-  .once('value')
-  .then(function(snapshot) {
-    let lastHtml = snapshot.val()
-    for (let i in lastHtml) {
-      lastHtmlId = i;
-    }
-  });
+  await db
+    .ref('HTML')
+    .orderByKey()
+    .limitToLast(1)
+    .once('value')
+    .then((snapshot) => {
+      const lastHtml = snapshot.val();
+      lastHtmlId = Object.keys(lastHtml);
+    });
 
-  return lastHtmlId;
+  return lastHtmlId[0];
 }
 
 async function getAllHtml() {
-  let db = firebase.database();
+  const db = firebase.database();
   let allHtml;
 
-  await db.ref("HTML")
-  .orderByKey()
-  .once('value')
-  .then(function(snapshot) {
-    allHtml = snapshot.val()
-  });
-  
+  await db
+    .ref('HTML')
+    .orderByKey()
+    .once('value')
+    .then((snapshot) => {
+      allHtml = snapshot.val();
+    });
+
   return allHtml;
 }
 
 async function getHtmlByMode(getMode) {
-  let db = firebase.database();
+  const db = firebase.database();
   let allHtml;
 
-  await db.ref("HTML")
-  .orderByKey()
-  .once('value')
-  .then(function(snapshot) {
-    allHtml = snapshot.val()
-  });
+  await db
+    .ref('HTML')
+    .orderByKey()
+    .once('value')
+    .then((snapshot) => {
+      allHtml = snapshot.val();
+    });
 
-  return [allHtml].filter(html => html.mode === getMode)
+  return [allHtml].filter((html) => html.mode === getMode);
 }
 
-//-- update
+// -- set
+async function setNewHtml(data) {
+  const db = firebase.database();
+  let lastId = await getLastHtmlId();
+  lastId += 1;
+  db.ref(`HTML/${lastId}`).set({
+    body: data.body,
+    id: lastId,
+    url: data.url,
+    parts: data.parts,
+    mode: data.mode,
+  });
+}
+
+// -- update
 async function updateHtmlById(data) {
-  let db = firebase.database();
-  db.ref('HTML/' + data.id).set({
+  const db = firebase.database();
+  db.ref(`HTML/${data.id}`).set({
     body: data.body,
     id: data.id,
     url: data.url,
     parts: data.parts,
-    mode: data.mode
+    mode: data.mode,
   });
 }
 
-//-- delete
+// -- delete
 async function deleteHtmlById(id) {
-  let db = firebase.database();
-  db.ref('HTML/' + id).set({});
+  const db = firebase.database();
+  db.ref(`HTML/${id}`).set({});
 }
 
-//--------------//
-//-- end HTML --//
-//--------------//
+// --------------//
+// -- end HTML --//
+// --------------//
 
-//-------------------//
-//-- start TWITTER --//
-//-------------------//
+// -------------------//
+// -- start TWITTER --//
+// -------------------//
 
-//-- set
-async function setNewTwitter(data) {
-  let db = firebase.database();
-  let lastId = await getLastTwitterId();
-  lastId++;
-  db.ref('TWITTER/' + lastId).set({
-    id: lastId,
-    time: data.time,
-    twitterid: data.twitterid
-  });
-}
-
-//- get
+// - get
 async function getLastTwitterId() {
-  let db = firebase.database();
+  const db = firebase.database();
   let lastTwitterId;
 
-  await db.ref("TWITTER")
-  .orderByKey()
-  .limitToLast(1)
-  .once('value')
-  .then(function(snapshot) {
-    let lastTwitter = snapshot.val()
-    for (let i in lastTwitter) {
-      lastTwitterId = i;
-    }
-  });
+  await db
+    .ref('TWITTER')
+    .orderByKey()
+    .limitToLast(1)
+    .once('value')
+    .then((snapshot) => {
+      const lastTwitter = snapshot.val();
+      lastTwitterId = Object.keys(lastTwitter);
+    });
 
-  return lastTwitterId;
+  return lastTwitterId[0];
 }
 
 async function getAllTwitter() {
-  let db = firebase.database();
+  const db = firebase.database();
   let allTwitter;
 
-  await db.ref("TWITTER")
-  .orderByKey()
-  .once('value')
-  .then(function(snapshot) {
-    allTwitter = snapshot.val()
-  });
-  
+  await db
+    .ref('TWITTER')
+    .orderByKey()
+    .once('value')
+    .then((snapshot) => {
+      allTwitter = snapshot.val();
+    });
+
   return allTwitter;
 }
 
-//-- update
-async function updateTwitterById(data) {
-  let db = firebase.database();
-  db.ref('TWITTER/' + data.id).set({
-    id: data.id,
+// -- set
+async function setNewTwitter(data) {
+  const db = firebase.database();
+  let lastId = await getLastTwitterId();
+  lastId += 1;
+  db.ref(`TWITTER/${lastId}`).set({
+    id: lastId,
     time: data.time,
-    twitterid: data.twitterid
+    twitterid: data.twitterid,
   });
 }
 
-//-- delete
-async function deleteTwitterById(id) {
-  let db = firebase.database();
-  db.ref('TWITTER/' + id).set({});
+// -- update
+async function updateTwitterById(data) {
+  const db = firebase.database();
+  db.ref(`TWITTER/${data.id}`).set({
+    id: data.id,
+    time: data.time,
+    twitterid: data.twitterid,
+  });
 }
 
-//-----------------//
-//-- end TWITTER --//
-//-----------------//
+// -- delete
+async function deleteTwitterById(id) {
+  const db = firebase.database();
+  db.ref(`TWITTER/${id}`).set({});
+}
+
+// -----------------//
+// -- end TWITTER --//
+// -----------------//
 
 module.exports = {
-  setNewUser: setNewUser,
-  getLastUserId: getLastUserId,
-  getAllUser: getAllUser,
-  deleteAllUser: deleteAllUser,
-  deleteUserByLineId: deleteUserByLineId,
-  isUserStartedByLineId: isUserStartedByLineId,
-  setNewHtml: setNewHtml,
-  getLastHtmlId: getLastHtmlId,
-  getHtmlByMode: getHtmlByMode,
-  getAllHtml: getAllHtml,
-  updateHtmlById: updateHtmlById,
-  deleteHtmlById: deleteHtmlById,
-  setNewTwitter: setNewTwitter,
-  getLastTwitterId: getLastTwitterId,
-  getAllTwitter: getAllTwitter,
-  updateTwitterById: updateTwitterById,
-  deleteTwitterById: deleteTwitterById
-}
+  setNewUser,
+  getLastUserId,
+  getAllUser,
+  deleteAllUser,
+  deleteUserByLineId,
+  isUserStartedByLineId,
+  setNewHtml,
+  getLastHtmlId,
+  getHtmlByMode,
+  getAllHtml,
+  updateHtmlById,
+  deleteHtmlById,
+  setNewTwitter,
+  getLastTwitterId,
+  getAllTwitter,
+  updateTwitterById,
+  deleteTwitterById,
+};

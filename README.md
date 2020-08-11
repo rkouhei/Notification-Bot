@@ -3,16 +3,16 @@
 ![node version](https://img.shields.io/badge/node_version->=10-informational)
 ![LICENSE](https://img.shields.io/github/license/rkouhei/Notification-Bot)
 
-## DEMO
-<img width="487" alt="notification-bot-demo1" src="https://user-images.githubusercontent.com/32559426/89857427-fea60980-dbd6-11ea-99ed-15380dd72f05.png">
-<img width="487" alt="notification-bot-demo2" src="https://user-images.githubusercontent.com/32559426/89857449-18475100-dbd7-11ea-9fc9-fffbb17fa56f.png">
-
 ## 概要
 *世の中には30分ごとにWebサイトを監視するという謎のバイトがあるらしい*🤔
 
 Notification-Bot(以下、本Bot)は、任意の時間間隔でWebサイト/Twitterアカウントの更新を監視し、[LINE BOT](https://developers.line.biz/ja/services/messaging-api/)で通知することができる。また、サイトのどの箇所が更新したかも通知することができる。
 
 また本Botは定期実行する必要があり、Hostingサービスとして[Firebase](https://firebase.google.com/?hl=ja)を使用する前提で作成している。
+
+## DEMO
+<img width="350" alt="notification-bot-demo1" src="https://user-images.githubusercontent.com/32559426/89857427-fea60980-dbd6-11ea-99ed-15380dd72f05.png"> <img width="350" alt="notification-bot-demo2" src="https://user-images.githubusercontent.com/32559426/89857449-18475100-dbd7-11ea-9fc9-fffbb17fa56f.png">
+
 
 ## デプロイまでの流れ
 

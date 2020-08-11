@@ -28,6 +28,16 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 const client = new line.Client(config);
 
 async function handleEvent(event) {
+  /**
+   * @receiveMessage 特別なメッセージ以外
+   * @replyText 'default' in template_message.json
+   */
+  let replyText = templateMessage.default;
+
+  /**
+   * @receiveMessage テキスト以外のメッセージ
+   * @replyText 'receiveNotTxtMessage' in template_message.json
+   */
   if (event.type !== 'message' || event.message.type !== 'text') {
     return await doReplyMessage(
       event.replyToken,
@@ -35,9 +45,11 @@ async function handleEvent(event) {
     );
   }
 
-  let replyText = templateMessage.default;
-
-  // -- 開始処理 --//
+  /**
+   * @brief DBへユーザの登録
+   * @receiveMessage '開始'
+   * @replyText 'newUserStartTrue' or 'newUserStartFalse' in template_message.json
+   */
   if (event.message.text === '開始') {
     const isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
     if (!isStarted) {
@@ -48,7 +60,11 @@ async function handleEvent(event) {
     }
   }
 
-  // -- 終了処理 --//
+  /**
+   * @brief DBからユーザの削除
+   * @receiveMessage '終了'
+   * @replyText 'UserEndTrue' or 'UserEndFalse' in template_message.json
+   */
   if (event.message.text === '終了') {
     const isStarted = await accessDB.isUserStartedByLineId(event.source.userId);
     if (isStarted) {
@@ -59,25 +75,14 @@ async function handleEvent(event) {
     }
   }
 
-  // -- ヘルプ --//
+  /**
+   * @brief 本BOTの使い方説明
+   * @receiveMessage 'ヘルプ'
+   * @replyText 'help' in template_message.json
+   */
   if (event.message.text === 'ヘルプ') {
     replyText = templateMessage.help;
   }
-
-  // ---- start 手動起動テスト ----//
-  if (event.message.text === 'いに') {
-    await initTask();
-    replyText = 'site DB init by hand';
-  }
-  if (event.message.text === 'ふぃに') {
-    await finishTask();
-    replyText = 'site DB clear by hand';
-  }
-  if (event.message.text === 'ぷ') {
-    await pushTask();
-    replyText = 'push test by hand';
-  }
-  // ---- end 手動起動テスト ----//
 
   return await doReplyMessage(event.replyToken, replyText);
 }

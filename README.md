@@ -68,6 +68,10 @@ Notification-Bot(以下、本Bot)は、任意の時間間隔でWebサイト/Twit
 
 ### 変更が必要な箇所
 
+./ | 変更内容
+-----------| ------
+.firebaserc | deploy先のプロジェクトIDを記述する
+
 functions/ | 変更内容
 -----------| ------
 index.js | module.exportsにて、監視開始時間/監視終了時間/定期監視時間を変更する
